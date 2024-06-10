@@ -13,12 +13,10 @@ return new class extends Migration
     {
         Schema::create('teachers', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained('users');
             $table->unsignedBigInteger('material_id')->nullable();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->rememberToken();
+            $table->string('about')->nullable();
+            $table->decimal('percentage', 5, 2)->default(0.0);
             $table->timestamps();
 
             //Relation

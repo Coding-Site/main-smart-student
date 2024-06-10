@@ -12,13 +12,16 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasApiTokens;
 
+    public function userable()
+    {
+        return $this->morphTo();
+    }
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
         'email',
         'password',
     ];
