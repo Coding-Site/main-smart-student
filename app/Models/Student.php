@@ -8,10 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class Student extends Model
 {
     use HasFactory;
-    protected $fillable = [
-        'name',
-        'email',
-    ];
     public function user()
     {
         return $this->morphOne(User::class, 'userable');

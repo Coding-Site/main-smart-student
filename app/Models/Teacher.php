@@ -10,10 +10,6 @@ use Laravel\Passport\HasApiTokens;
 class Teacher extends Model
 {
     use HasFactory, Notifiable, HasApiTokens;
-    protected $fillable = [
-        'name',
-        'email',
-    ];
     public function user()
     {
         return $this->morphOne(User::class, 'userable');
