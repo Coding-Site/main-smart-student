@@ -17,8 +17,11 @@ class TeacherMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::guard('api')->check() || !Auth::user()->userable instanceof Teacher) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+        if (!Auth::guard('api')->check()) {
+            abort(401, 'Unauthenticated, please login first.');
+        }
+        if (!Auth::uer()->userable instanceof Teacher) {
+            abort(403, 'Sorry, Access not allowed for you, '.Auth::uer()->name);
         }
         return $next($request);
     }

@@ -12,6 +12,10 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable, HasApiTokens;
 
+    public function findForPassport($username)
+    {
+        return $this->where('phone', $username)->first();
+    }
     public function userable()
     {
         return $this->morphTo();
