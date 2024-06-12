@@ -20,7 +20,7 @@ class EducationLevelController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string',
-            'name_en' => 'required|string',
+            'name_en' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpg,jpeg,png',
         ]);
         if ($validator->fails()) {
@@ -31,7 +31,7 @@ class EducationLevelController extends Controller
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $imageName = time(). '.'. $image->getClientOriginalExtension();
-            Storage::putFileAs('public/classrooms', $image, $imageName);
+            Storage::putFileAs('public/levels', $image, $imageName);
             $educationLevel->image = $imageName;
         }
         $educationLevel->save();

@@ -28,4 +28,11 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::put('/update/{id}','update');
         Route::delete('/delete/{id}','destroy');
     });
+    Route::prefix('matrial')->controller(\App\Http\Controllers\API\MaterialController::class)->group(function () {
+        Route::get('/','index');
+        Route::get('/{id}','show');
+        Route::post('/store','store');
+        Route::put('/update/{id}','update');
+        Route::delete('/delete/{id}','destroy');
+    });
 });

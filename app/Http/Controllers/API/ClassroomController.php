@@ -20,7 +20,7 @@ class ClassroomController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string',
-            'name_en' => 'required|string',
+            'name_en' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpg,jpeg,png',
         ]);
         if ($validator->fails()) {

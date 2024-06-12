@@ -4,63 +4,68 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Material;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class MaterialController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $materials = Material::all();
+        return response()->json(['data' => $materials], 200);
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string',
+            'name_en' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->messages()], 422);
+        }
+        $material = new Material();
+        $material->fill($request->only(['name', 'name_en']));
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time(). '.'. $image->getClientOriginalExtension();
+            Storage::putFileAs('public/materials', $image, $imageName);
+            $material->image = $imageName;
+        }
+        $material->save();
+        return response()->json(['data' => $material, 'message' => 'material added successfully'], 200);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show($id)
     {
-        //
+        try {
+            $material = Material::findOrFail($id);
+            return response()->json(['data' => $material], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'material not found'], 404);
+        }
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    
+    public function update(Request $request, $id)
     {
-        //
+        try {
+            $material = Material::findOrFail($id);
+            $material->update($request->all());
+            return response()->json(['success' => 'material updated successfully'], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'material not found'], 404);
+        }
     }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function destroy($id)
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        try {
+            $material = Material::findOrFail($id);
+            $material->delete();
+            return response()->json(['success' => 'material deleted successfully'], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['error' => 'material not found'], 404);
+        }
     }
 }
