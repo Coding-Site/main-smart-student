@@ -8,18 +8,17 @@ Route::prefix('auth')->controller(\App\Http\Controllers\API\AuthController::clas
     Route::post('/register','register');
 });
 
-Route::prefix('admin')->middleware('admin')->controller(\App\Http\Controllers\API\AdminController::class)->group(function () {
-    Route::get('/','show');
+Route::prefix('admin')->middleware('admin')->group(function () {
+    Route::prefix('data')->controller(\App\Http\Controllers\API\AdminController::class)->group(function () {
+        Route::get('/','show');
+        Route::post('/update','update');
+        Route::post('/reset/passsword','resetPassword');
+    });
+    Route::prefix('classroom')->controller(\App\Http\Controllers\API\ClassroomController::class)->group(function () {
+        Route::get('/','index');
+        Route::get('/{id}','show');
+        Route::post('/store','store');
+        Route::put('/update/{id}','update');
+        Route::delete('/delete/{id}','destroy');
+    });
 });
-
-// Route::prefix('teacher')->group(['middleware' => 'teacher'], function () {
-    
-// });
-
-// Route::prefix('student')->group(['middleware' => 'student'], function () {
-    
-// });
-
-// Route::prefix('delegate')->group(['middleware' => 'delegate'], function () {
-    
-// });

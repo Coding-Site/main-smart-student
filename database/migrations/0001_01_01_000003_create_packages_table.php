@@ -18,7 +18,7 @@ return new class extends Migration
             $table->date('expiry_date')->nullable();
             $table->integer('price')->default(0);
             $table->integer('selling_price')->default(0);
-            $table->text('picture')->nullable();
+            $table->string('image')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

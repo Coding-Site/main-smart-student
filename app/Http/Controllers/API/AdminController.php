@@ -25,33 +25,33 @@ class AdminController extends Controller
     public function show(Request $request)
     {
         $user = Auth::guard('api')->user();
-        return Response($user, 200);
+        return response()->json(['data' => $user], 200);
     }
-    public function update(Request $request,User $admin)
+    public function update(Request $request)
     {
+        $admin = Auth::guard('api')->user();
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string',
+            'name' => 'nullable|string',
             'email' => 'nullable|email',
-            'phone' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:8|max:15|string||unique:users', 
+            'phone' => 'nullable|regex:/^([0-9\s\-\+\(\)]*)$/|min:8|max:15|string|unique:users,phone,'. $admin->id,
             'image' => 'nullable|image|mimes:jpg,jpeg,png',
         ]);
         if ($validator->fails()) {
             return response()->json(['error' => $validator->messages()], 422);
         }
+        $admin->fill($request->only(['name', 'email', 'phone']));
+
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $imageName = time(). '.'. $image->getClientOriginalExtension();
-            Storage::putFileAs('public/images', $image, $imageName);
+            Storage::putFileAs('public/users', $image, $imageName);
             $admin->image = $imageName;
         }
-    
-        $admin->name = $request->name;
-        $admin->email = $request->email;
-        $admin->phone = $request->phone;
+        
         $admin->save();
-
+        return response()->json(['success' => 'data updated successfully'], 200);
     }
-    public function resetPassword(Request $request,User $admin)
+    public function resetPassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'old_password' => 'required',
@@ -62,7 +62,7 @@ class AdminController extends Controller
         if ($validator->fails()) {
             return response()->json(['error' => $validator->messages()], 422);
         }
-        
+        $admin = Auth::guard('api')->user();
         if (!Hash::check($request->old_password, $admin->password)) {
             return response()->json(['message' => 'password is incorrect'], 422);
         }
