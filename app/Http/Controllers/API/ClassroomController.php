@@ -27,14 +27,13 @@ class ClassroomController extends Controller
             return response()->json(['error' => $validator->messages()], 422);
         }
         $classroom = new Classroom();
+        $classroom->fill($request->only(['name', 'name_en']));
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $imageName = time(). '.'. $image->getClientOriginalExtension();
             Storage::putFileAs('public/classrooms', $image, $imageName);
             $classroom->image = $imageName;
         }
-        $classroom->name = $request->name;
-        $classroom->name_en = $request->name_en;
         $classroom->save();
         return response()->json(['data' => $classroom, 'message' => 'classroom added successfully'], 200);
     }
