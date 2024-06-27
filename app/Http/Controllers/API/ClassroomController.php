@@ -50,9 +50,27 @@ class ClassroomController extends Controller
     
     public function update(Request $request, $id)
     {
+        $validator = Validator::make($request->all(), [
+            'name' => 'nullable|string',
+            'name_en' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->messages()], 422);
+        }
         try {
             $classroom = Classroom::findOrFail($id);
-            $classroom->update($request->all());
+            $classroom->fill($request->all());
+            if ($request->hasFile('image')) {
+                if ($classroom->image) {
+                    Storage::delete('public/classrooms/'. $classroom->image);
+                }
+                $image = $request->file('image');
+                $imageName = time(). '.'. $image->getClientOriginalExtension();
+                $classroom->image = $imageName;
+                Storage::putFileAs('public/classrooms', $image, $imageName);
+            }
+            $classroom->save();
             return response()->json(['success' => 'Classroom updated successfully'], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Classroom not found'], 404);

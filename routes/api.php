@@ -35,4 +35,18 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::put('/update/{id}','update');
         Route::delete('/delete/{id}','destroy');
     });
+    Route::prefix('package')->controller(\App\Http\Controllers\API\PackageController::class)->group(function () {
+        Route::get('/','index');
+        Route::get('/{id}','show');
+        Route::post('/store','store');
+        Route::put('/update/{id}','update');
+        Route::delete('/delete/{id}','destroy');
+    });
+    Route::prefix('delegate')->controller(\App\Http\Controllers\API\DelegateController::class)->group(function () {
+        Route::get('/','index');
+        Route::get('/{id}','show');
+        Route::post('/store','store');
+        Route::put('/update/{id}','update');
+        Route::delete('/delete/{id}','destroy');
+    });
 });

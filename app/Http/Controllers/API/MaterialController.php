@@ -50,9 +50,27 @@ class MaterialController extends Controller
     
     public function update(Request $request, $id)
     {
+        $validator = Validator::make($request->all(), [
+            'name' => 'nullable|string',
+            'name_en' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->messages()], 422);
+        }
         try {
             $material = Material::findOrFail($id);
-            $material->update($request->all());
+            $material->fill($request->all());
+            if ($request->hasFile('image')) {
+                if ($material->image) {
+                    Storage::delete('public/materials/'. $material->image);
+                }
+                $image = $request->file('image');
+                $imageName = time(). '.'. $image->getClientOriginalExtension();
+                $material->image = $imageName;
+                Storage::putFileAs('public/materials', $image, $imageName);
+            }
+            $material->save();
             return response()->json(['success' => 'material updated successfully'], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'material not found'], 404);

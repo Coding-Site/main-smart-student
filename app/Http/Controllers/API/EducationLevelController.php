@@ -50,9 +50,27 @@ class EducationLevelController extends Controller
     
     public function update(Request $request, $id)
     {
+        $validator = Validator::make($request->all(), [
+            'name' => 'nullable|string',
+            'name_en' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->messages()], 422);
+        }
         try {
             $educationLevel = EducationLevel::findOrFail($id);
-            $educationLevel->update($request->all());
+            $educationLevel->fill($request->all());
+            if ($request->hasFile('image')) {
+                if ($educationLevel->image) {
+                    Storage::delete('public/levels/'. $educationLevel->image);
+                }
+                $image = $request->file('image');
+                $imageName = time(). '.'. $image->getClientOriginalExtension();
+                $educationLevel->image = $imageName;
+                Storage::putFileAs('public/levels', $image, $imageName);
+            }
+            $educationLevel->save();
             return response()->json(['success' => 'educationLevel updated successfully'], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'educationLevel not found'], 404);

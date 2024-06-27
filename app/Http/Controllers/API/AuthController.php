@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use App\Rules\ClassroomIdExists;
 use App\Rules\EducationLevelIdExists;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends AccessTokenController
 {
@@ -53,6 +54,7 @@ class AuthController extends AccessTokenController
             'phone' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:8|max:15|string|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'password_confirmation' => 'required|string|min:8',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png',
             'education_level_id' => ['required', 'integer', new EducationLevelIdExists],
             'classroom_id' => ['required', 'integer', new ClassroomIdExists]
         ]);
@@ -61,19 +63,26 @@ class AuthController extends AccessTokenController
             return response()->json(['error' => $validator->messages()], 422);
         }
 
-        $user = new User();
-        $user->name = $request->input('name');
-        $user->email = $request->input('email');
-        $user->phone = $request->input('phone');
-        $user->userable_type = 'App\Models\Student';
-        $user->password = Hash::make($request->password);
-        $user->save();
+        $user = User::create([
+            'name' => $request->input('name'),
+            'email' => $request->input('email'),
+            'phone' => $request->input('phone'),
+            'userable_type' => 'App\Models\Student',
+            'password' => Hash::make($request->password),
+        ]);
+        
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time(). '.'. $image->getClientOriginalExtension();
+            Storage::putFileAs('public/students', $image, $imageName);
+            $user->image = $imageName;
+        }
 
-        $student = new Student();
-        $student->user_id = $user->id;
-        $student->education_level_id = $request->education_level_id;
-        $student->classroom_id = $request->classroom_id;
-        $student->save();
+        $student = Student::create([
+            'user_id' => $user->id,
+            'education_level_id' => $request->education_level_id,
+            'classroom_id' => $request->classroom_id,
+        ]);
 
         $user->userable_id = $student->id;
         $user->save();
