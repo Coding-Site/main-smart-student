@@ -12,12 +12,13 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Hash;
 use App\Rules\ClassroomIdExists;
 use App\Rules\EducationLevelIdExists;
+use Illuminate\Support\Facades\DB;
 
 class StudentController extends Controller
 {
     public function index()
     {
-        $students = Student::with('user')->all();
+        $students = Student::with('user')->get();
         return response()->json(['data' => $students], 200);
     }
     public function store(Request $request)
@@ -35,6 +36,7 @@ class StudentController extends Controller
         if ($validator->fails()) {
             return response()->json(['error' => $validator->messages()], 422);
         }
+        try{
         $user = User::create([
             'name' => $request->input('name'),
             'email' => $request->input('email'),
@@ -59,6 +61,10 @@ class StudentController extends Controller
         $user->userable_id = $student->id;
         $user->save();
         return response()->json(['data' => $student, 'message' => 'student added successfully'], 200);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['error' => 'Error creating user'], 500);
+        }
     }
 
     public function show($id)
@@ -73,11 +79,12 @@ class StudentController extends Controller
     
     public function update(Request $request, $id)
     {
-        $student = User::findOrFail($id);
+        $student = Student::with('user')->findOrFail($id);
+        $user = $student->user;
         $validator = Validator::make($request->all(), [
             'name' => 'nullable|string',
-            'email' => 'nullable|email|unique:users,email,'. $student->id,
-            'phone' => 'nullable|regex:/^([0-9\s\-\+\(\)]*)$/|min:8|max:15|string|unique:users,phone,'. $student->id,
+            'email' => 'nullable|email|unique:users,email,'. $user->id,
+            'phone' => 'nullable|regex:/^([0-9\s\-\+\(\)]*)$/|min:8|max:15|string|unique:users,phone,'. $user->id,
             'image' => 'nullable|image|mimes:jpg,jpeg,png',
             'education_level_id' => ['required', 'integer', new EducationLevelIdExists],
             'classroom_id' => ['required', 'integer', new ClassroomIdExists]
@@ -86,21 +93,20 @@ class StudentController extends Controller
             return response()->json(['error' => $validator->messages()], 422);
         }
         try {
-            $student->fill($request->only(['name', 'email','phone']));
+            $user->fill($request->only(['name', 'email','phone']));
             if ($request->hasFile('image')) {
                 if ($student->image) {
-                    Storage::delete('public/students/'. $student->image);
+                    Storage::delete('public/students/'. $user->image);
                 }
                 $image = $request->file('image');
                 $imageName = time(). '.'. $image->getClientOriginalExtension();
-                $student->image = $imageName;
+                $user->image = $imageName;
                 Storage::putFileAs('public/students', $image, $imageName);
             }
         
-            $student->save();
-            $student = Student::findOrFail($id);
+            $user->save();
             $student->update($request->only(['education_level_id', 'classroom_id']));
-            return response()->json(['success' => 'student updated successfully'], 200);
+            return response()->json(['data' => $student, 'message' => 'student updated successfully'], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'student not found'], 404);
         }
@@ -112,7 +118,7 @@ class StudentController extends Controller
             $user = User::findOrFail($student->user_id);
             $student->delete();
             $user->delete();
-            return response()->json(['success' => 'student deleted successfully'], 200);
+            return response()->json(['message' => 'student deleted successfully'], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'student not found'], 404);
         }

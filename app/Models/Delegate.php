@@ -10,6 +10,9 @@ use Laravel\Passport\HasApiTokens;
 class Delegate extends Model
 {
     use HasFactory, Notifiable, HasApiTokens;
+    protected $fillable = [
+        'user_id',
+    ];
     public function user()
     {
         return $this->morphOne(User::class, 'userable');

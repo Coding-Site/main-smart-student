@@ -71,7 +71,7 @@ class MaterialController extends Controller
                 Storage::putFileAs('public/materials', $image, $imageName);
             }
             $material->save();
-            return response()->json(['success' => 'material updated successfully'], 200);
+            return response()->json(['data' => $material, 'message' => 'material updated successfully'], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'material not found'], 404);
         }
@@ -81,7 +81,7 @@ class MaterialController extends Controller
         try {
             $material = Material::findOrFail($id);
             $material->delete();
-            return response()->json(['success' => 'material deleted successfully'], 200);
+            return response()->json(['message' => 'material deleted successfully'], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'material not found'], 404);
         }

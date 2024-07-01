@@ -18,35 +18,49 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::get('/','index');
         Route::get('/{id}','show');
         Route::post('/store','store');
-        Route::put('/update/{id}','update');
+        Route::post('/update/{id}','update');
         Route::delete('/delete/{id}','destroy');
     });
     Route::prefix('level')->controller(\App\Http\Controllers\API\EducationLevelController::class)->group(function () {
         Route::get('/','index');
         Route::get('/{id}','show');
         Route::post('/store','store');
-        Route::put('/update/{id}','update');
+        Route::post('/update/{id}','update');
         Route::delete('/delete/{id}','destroy');
     });
-    Route::prefix('matrial')->controller(\App\Http\Controllers\API\MaterialController::class)->group(function () {
+    Route::prefix('material')->controller(\App\Http\Controllers\API\MaterialController::class)->group(function () {
         Route::get('/','index');
         Route::get('/{id}','show');
         Route::post('/store','store');
-        Route::put('/update/{id}','update');
+        Route::post('/update/{id}','update');
         Route::delete('/delete/{id}','destroy');
     });
     Route::prefix('package')->controller(\App\Http\Controllers\API\PackageController::class)->group(function () {
         Route::get('/','index');
         Route::get('/{id}','show');
         Route::post('/store','store');
-        Route::put('/update/{id}','update');
+        Route::post('/update/{id}','update');
         Route::delete('/delete/{id}','destroy');
     });
     Route::prefix('delegate')->controller(\App\Http\Controllers\API\DelegateController::class)->group(function () {
         Route::get('/','index');
         Route::get('/{id}','show');
         Route::post('/store','store');
-        Route::put('/update/{id}','update');
+        Route::post('/update/{id}','update');
+        Route::delete('/delete/{id}','destroy');
+    });
+    Route::prefix('teacher')->controller(\App\Http\Controllers\API\TeacherController::class)->group(function () {
+        Route::get('/','index');
+        Route::get('/{id}','show');
+        Route::post('/store','store');
+        Route::post('/update/{id}','update');
+        Route::delete('/delete/{id}','destroy');
+    });
+    Route::prefix('student')->controller(\App\Http\Controllers\API\StudentController::class)->group(function () {
+        Route::get('/','index');
+        Route::get('/{id}','show');
+        Route::post('/store','store');
+        Route::post('/update/{id}','update');
         Route::delete('/delete/{id}','destroy');
     });
 });

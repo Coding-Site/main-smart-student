@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('name')->nullable(false);
             $table->string('name_en')->nullable();
             $table->string('image')->nullable();
+            $table->unsignedBigInteger('level_id')->nullable();
+            $table->foreign('level_id')->references('id')->on('education_levels')->onDelete('cascade')->onUpdate('cascade');
             $table->softDeletes();
             $table->timestamps();
         });

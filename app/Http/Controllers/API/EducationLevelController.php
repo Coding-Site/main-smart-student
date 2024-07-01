@@ -71,7 +71,7 @@ class EducationLevelController extends Controller
                 Storage::putFileAs('public/levels', $image, $imageName);
             }
             $educationLevel->save();
-            return response()->json(['success' => 'educationLevel updated successfully'], 200);
+            return response()->json(['data' => $educationLevel, 'message' =>'educationLevel updated successfully'], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'educationLevel not found'], 404);
         }
@@ -81,7 +81,7 @@ class EducationLevelController extends Controller
         try {
             $educationLevel = EducationLevel::findOrFail($id);
             $educationLevel->delete();
-            return response()->json(['success' => 'educationLevel deleted successfully'], 200);
+            return response()->json(['message' => 'educationLevel deleted successfully'], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'educationLevel not found'], 404);
         }

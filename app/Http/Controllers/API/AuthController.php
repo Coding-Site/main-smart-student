@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Rules\ClassroomIdExists;
 use App\Rules\EducationLevelIdExists;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends AccessTokenController
 {
@@ -50,7 +51,7 @@ class AuthController extends AccessTokenController
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string',
-            'email' => 'nulable|email|unique:users',
+            'email' => 'nullable|email|unique:users',
             'phone' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/|min:8|max:15|string|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'password_confirmation' => 'required|string|min:8',
@@ -62,7 +63,7 @@ class AuthController extends AccessTokenController
         if ($validator->fails()) {
             return response()->json(['error' => $validator->messages()], 422);
         }
-
+        try{
         $user = User::create([
             'name' => $request->input('name'),
             'email' => $request->input('email'),
@@ -90,5 +91,9 @@ class AuthController extends AccessTokenController
         $token = $user->createToken('MyApp')->accessToken;
 
         return response()->json(['token' => $token, 'user' => $user, 'role' => 'student'], 201);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['error' => 'Error creating user'], 500);
+        }
     }
 }

@@ -11,12 +11,13 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Hash;
 use App\Rules\MaterialIdExists;
+use Illuminate\Support\Facades\DB;
 
 class TeacherController extends Controller
 {
     public function index()
     {
-        $teachers = Teacher::with('user')->all();
+        $teachers = Teacher::with('user')->get();
         return response()->json(['data' => $teachers], 200);
     }
     public function store(Request $request)
@@ -35,6 +36,7 @@ class TeacherController extends Controller
         if ($validator->fails()) {
             return response()->json(['error' => $validator->messages()], 422);
         }
+        try{
         $user = User::create([
             'name' => $request->input('name'),
             'email' => $request->input('email'),
@@ -52,12 +54,18 @@ class TeacherController extends Controller
 
         $teacher = Teacher::create([
             'user_id' => $user->id,
+            'about' => $request->about,
+            'percentage' => $request->percentage,
             'material_id' => $request->material_id,
         ]);
 
         $user->userable_id = $teacher->id;
         $user->save();
-        return response()->json(['data' => $teacher, 'message' => 'teacher added successfully'], 200);
+        return response()->json(['data' => [$teacher,$user], 'message' => 'teacher added successfully'], 200);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['error' => 'Error creating user'], 500);
+        }
     }
 
     public function show($id)
@@ -72,11 +80,12 @@ class TeacherController extends Controller
     
     public function update(Request $request, $id)
     {
-        $teacher = User::findOrFail($id);
+        $teacher = Teacher::with('user')->findOrFail($id);
+        $user = $teacher->user;
         $validator = Validator::make($request->all(), [
-            'name' => 'nulable|string',
-            'email' => 'nulable|email|unique:users,email,'. $teacher->id,
-            'phone' => 'nulable|regex:/^([0-9\s\-\+\(\)]*)$/|min:8|max:15|string|unique:users,phone,'. $teacher->id,
+            'name' => 'nullable|string',
+            'email' => 'nullable|email|unique:users,email,'. $user->id,
+            'phone' => 'nullable|regex:/^([0-9\s\-\+\(\)]*)$/|min:8|max:15|string|unique:users,phone,'. $user->id,
             'image' => 'nullable|image|mimes:jpg,jpeg,png',
             'about' => 'nullable|string',
             'percentage' => 'nullable|numeric',
@@ -86,21 +95,20 @@ class TeacherController extends Controller
             return response()->json(['error' => $validator->messages()], 422);
         }
         try {
-            $teacher->fill($request->only(['name', 'email','phone']));
+            $user->fill($request->only(['name', 'email','phone']));
             if ($request->hasFile('image')) {
-                if ($teacher->image) {
-                    Storage::delete('public/teachers/'. $teacher->image);
+                if ($user->image) {
+                    Storage::delete('public/teachers/'. $user->image);
                 }
                 $image = $request->file('image');
                 $imageName = time(). '.'. $image->getClientOriginalExtension();
-                $teacher->image = $imageName;
+                $user->image = $imageName;
                 Storage::putFileAs('public/teachers', $image, $imageName);
             }
         
-            $teacher->save();
-            $teacher = Teacher::findOrFail($id);
+            $user->save();
             $teacher->update($request->only(['about', 'percentage','material_id']));
-            return response()->json(['success' => 'teacher updated successfully'], 200);
+            return response()->json(['data' =>$teacher ,'message' => 'teacher updated successfully'], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'teacher not found'], 404);
         }

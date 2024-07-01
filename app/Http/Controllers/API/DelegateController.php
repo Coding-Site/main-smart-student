@@ -10,12 +10,14 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+
 
 class DelegateController extends Controller
 {
     public function index()
     {
-        $delegates = Delegate::with('user')->all();
+        $delegates = Delegate::with('user')->get();
         return response()->json(['data' => $delegates], 200);
     }
     public function store(Request $request)
@@ -31,6 +33,7 @@ class DelegateController extends Controller
         if ($validator->fails()) {
             return response()->json(['error' => $validator->messages()], 422);
         }
+        try{
         $user = User::create([
             'name' => $request->input('name'),
             'email' => $request->input('email'),
@@ -52,7 +55,11 @@ class DelegateController extends Controller
 
         $user->userable_id = $delegate->id;
         $user->save();
-        return response()->json(['data' => $delegate, 'message' => 'delegate added successfully'], 200);
+        return response()->json(['data' => $user, 'message' => 'delegate added successfully'], 200);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['error' => 'Error creating user'], 500);
+        }
     }
 
     public function show($id)
@@ -67,30 +74,31 @@ class DelegateController extends Controller
     
     public function update(Request $request, $id)
     {
-        $delegate = User::findOrFail($id);
+        $delegate = Delegate::with('user')->findOrFail($id); 
+        $user = $delegate->user;
         $validator = Validator::make($request->all(), [
             'name' => 'nullable|string',
-            'email' => 'nullable|email|unique:users,email,'. $delegate->id,
-            'phone' => 'nullable|regex:/^([0-9\s\-\+\(\)]*)$/|min:8|max:15|string|unique:users,phone,'. $delegate->id,
+            'email' => 'nullable|email|unique:users,email,'. $user->id,
+            'phone' => 'nullable|regex:/^([0-9\s\-\+\(\)]*)$/|min:8|max:15|string|unique:users,phone,'. $user->id,
             'image' => 'nullable|image|mimes:jpg,jpeg,png',
         ]);
         if ($validator->fails()) {
             return response()->json(['error' => $validator->messages()], 422);
         }
         try {
-            $delegate->fill($request->only(['name', 'email','phone']));
+            $user->fill($request->only(['name', 'email','phone']));
             if ($request->hasFile('image')) {
-                if ($delegate->image) {
-                    Storage::delete('public/delegates/'. $delegate->image);
+                if ($user->image) {
+                    Storage::delete('public/delegates/'. $user->image);
                 }
                 $image = $request->file('image');
                 $imageName = time(). '.'. $image->getClientOriginalExtension();
-                $delegate->image = $imageName;
+                $user->image = $imageName;
                 Storage::putFileAs('public/delegates', $image, $imageName);
             }
         
-            $delegate->save();
-            return response()->json(['success' => 'Delegate updated successfully'], 200);
+            $user->save();
+            return response()->json(['data' => $user, 'message' =>'Delegate updated successfully'], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Delegate not found'], 404);
         }
@@ -102,7 +110,7 @@ class DelegateController extends Controller
             $user = User::findOrFail($delegate->user_id);
             $delegate->delete();
             $user->delete();
-            return response()->json(['success' => 'delegate deleted successfully'], 200);
+            return response()->json(['message' => 'delegate deleted successfully'], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'delegate not found'], 404);
         }

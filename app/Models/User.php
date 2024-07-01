@@ -30,6 +30,8 @@ class User extends Authenticatable
         'password',
         'name',
         'phone',
+        'userable_type',
+        'userable_id',
         'image'
     ];
 

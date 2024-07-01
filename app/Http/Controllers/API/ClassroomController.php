@@ -71,7 +71,7 @@ class ClassroomController extends Controller
                 Storage::putFileAs('public/classrooms', $image, $imageName);
             }
             $classroom->save();
-            return response()->json(['success' => 'Classroom updated successfully'], 200);
+            return response()->json(['data' => $classroom, 'message' => 'Classroom updated successfully'], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Classroom not found'], 404);
         }
@@ -81,7 +81,7 @@ class ClassroomController extends Controller
         try {
             $classroom = Classroom::findOrFail($id);
             $classroom->delete();
-            return response()->json(['success' => 'Classroom deleted successfully'], 200);
+            return response()->json(['message' => 'Classroom deleted successfully'], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Classroom not found'], 404);
         }

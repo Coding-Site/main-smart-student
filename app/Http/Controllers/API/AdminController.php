@@ -30,7 +30,7 @@ class AdminController extends Controller
     public function update(Request $request)
     {
         $admin = Auth::guard('api')->user();
-        $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->json()->all(), [
             'name' => 'nullable|string',
             'email' => 'nullable|email',
             'phone' => 'nullable|regex:/^([0-9\s\-\+\(\)]*)$/|min:8|max:15|string|unique:users,phone,'. $admin->id,
@@ -49,7 +49,7 @@ class AdminController extends Controller
         }
         
         $admin->save();
-        return response()->json(['success' => 'data updated successfully'], 200);
+        return response()->json(['message' => 'data updated successfully', 'data' => $admin], 200);
     }
     public function resetPassword(Request $request)
     {
