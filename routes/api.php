@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->controller(\App\Http\Controllers\API\AuthController::class)->group(function () {
@@ -57,6 +56,27 @@ Route::prefix('admin')->middleware('admin')->group(function () {
         Route::delete('/delete/{id}','destroy');
     });
     Route::prefix('student')->controller(\App\Http\Controllers\API\StudentController::class)->group(function () {
+        Route::get('/','index');
+        Route::get('/{id}','show');
+        Route::post('/store','store');
+        Route::post('/update/{id}','update');
+        Route::delete('/delete/{id}','destroy');
+    });
+    Route::prefix('course')->controller(\App\Http\Controllers\API\CourseController::class)->group(function () {
+        Route::get('/','index');
+        Route::get('/{id}','show');
+        Route::post('/store','store');
+        Route::post('/update/{id}','update');
+        Route::delete('/delete/{id}','destroy');
+    });
+    Route::prefix('bank')->controller(\App\Http\Controllers\API\BankController::class)->group(function () {
+        Route::get('/','index');
+        Route::get('/{id}','show');
+        Route::post('/store','store');
+        Route::post('/update/{id}','update');
+        Route::delete('/delete/{id}','destroy');
+    });
+    Route::prefix('exam')->controller(\App\Http\Controllers\API\ExamController::class)->group(function () {
         Route::get('/','index');
         Route::get('/{id}','show');
         Route::post('/store','store');
