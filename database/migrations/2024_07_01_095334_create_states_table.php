@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('materials', function (Blueprint $table) {
+        Schema::create('states', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable(false);
-            $table->string('name_en')->nullable();
-            $table->string('image')->nullable();
-            $table->softDeletes();
+            $table->string('name')->required();
+            $table->decimal('deliver_price', 10, 2)->nullable()->default(0.0);
+            $table->unsignedBigInteger('delegate_id')->nullable();
+            $table->foreign('delegate_id')->references('id')->on('delegates')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();
         });
     }
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('materials');
+        Schema::dropIfExists('states');
     }
 };

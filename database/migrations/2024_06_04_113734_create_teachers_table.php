@@ -14,13 +14,9 @@ return new class extends Migration
         Schema::create('teachers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users');
-            $table->unsignedBigInteger('material_id')->nullable();
             $table->string('about')->nullable();
-            $table->decimal('percentage', 5, 2)->default(0.0);
+            $table->decimal('percentage', 5, 2)->default(0.0)->max(100.0);
             $table->timestamps();
-
-            //Relation
-            $table->foreign('material_id')->references('id')->on('materials')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 

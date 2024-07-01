@@ -11,19 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('courses', function (Blueprint $table) {
+        Schema::create('notes', function (Blueprint $table) {
             $table->id();
-            $table->enum('type', ['paid', 'free']);
-            $table->date('expire_date')->nullable();
-            $table->integer('semester_price')->default(0);
-            $table->integer('month_price')->default(0);
-            $table->unsignedBigInteger('semester_id')->nullable();
+            $table->string('name')->required();
+            $table->decimal('price', 10, 2)->nullable()->default(0.0);
+            $table->integer('quantity')->unsigned()->required()->default(0);
+            $table->decimal('teacher_percentage', 5, 2)->default(50.0)->max(100.0);
+            $table->string('file')->required();
             $table->unsignedBigInteger('material_id')->nullable();
-            $table->unsignedBigInteger('classroom_id')->nullable();
             $table->unsignedBigInteger('teacher_id')->nullable();
+            $table->unsignedBigInteger('classroom_id')->nullable();
+            $table->unsignedBigInteger('semester_id')->nullable();
             $table->foreign('semester_id')->references('id')->on('semesters')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('material_id')->references('id')->on('materials')->onDelete('cascade')->onUpdate('cascade');
             $table->foreign('classroom_id')->references('id')->on('classrooms')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('material_id')->references('id')->on('materials')->onDelete('cascade')->onUpdate('cascade');
             $table->foreign('teacher_id')->references('id')->on('teachers')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();
         });
@@ -34,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('courses');
+        Schema::dropIfExists('notes');
     }
 };

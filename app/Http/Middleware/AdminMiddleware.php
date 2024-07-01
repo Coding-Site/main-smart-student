@@ -19,9 +19,9 @@ class AdminMiddleware
     {
         if (!Auth::guard('api')->check()) {
             return response()->json(['error' => 'Unauthenticated, please login first.'], 401);
-            if (!Auth::user()->userable instanceof Admin) {
-                return response()->json(['error' => 'Sorry, Access not allowed for you, '.Auth::user()->name], 403);
-            }
+        }
+        if (!Auth::user()->userable instanceof Admin) {
+            return response()->json(['error' => 'Sorry, Access not allowed for you, '.Auth::user()->name], 403);
         }
         return $next($request);
     }
